@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t 29abc/multi-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run 29abc/multi-test npm test -- --coverage
+
+after_success:
+  - docker build -t 29abc/multi-client ./client
+  - docker build -t 29abc/multi-worker ./worker
+  - docker build -t 29abc/multi-server ./server
+  - docker build -t 29abc/multi-nginx ./nginx
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push 29abc/multi-client
+  - docker push 29abc/multi-worker
+  - docker push 29abc/multi-server
+  - docker push 29abc/multi-nginx 
